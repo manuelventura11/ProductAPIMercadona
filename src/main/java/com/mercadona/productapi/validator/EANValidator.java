@@ -6,7 +6,6 @@ import jakarta.validation.ConstraintValidatorContext;
 import static com.mercadona.productapi.common.constants.UrlMvcConstants.*;
 
 public class EANValidator implements ConstraintValidator<EAN, String> {
-
     @Override
     public void initialize(EAN constraintAnnotation) {}
 

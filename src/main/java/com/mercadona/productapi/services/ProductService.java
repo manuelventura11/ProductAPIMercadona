@@ -28,6 +28,13 @@ public interface ProductService {
     List<Product> findAll();
 
     /**
+     * Update a product in the system.
+     *
+     * @param product the product to update
+     */
+    void updateProduct(Product product);
+
+    /**
      * Deletes a product by its EAN code.
      *
      * @param ean the EAN code of the product to delete

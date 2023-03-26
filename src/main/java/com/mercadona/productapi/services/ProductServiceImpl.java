@@ -59,9 +59,20 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.entityToProductList(productEntities);
     }
 
-
     @Override
     @Transactional
+    public void updateProduct(Product product) {
+        ProductEntity productEntity = productRepository.findByEan(product.getEan());
+        if (productEntity != null) {
+            productEntity = productMapper.productToEntity(product);
+            productRepository.save(productEntity);
+        } else {
+            throw new ResourceNotFoundException("Product not found with EAN code: " + product.getEan());
+        }
+    }
+
+
+    @Override
     public void deleteByEan(String ean) {
         ProductEntity productEntity = productRepository.findByEan(ean);
         if (productEntity != null) {

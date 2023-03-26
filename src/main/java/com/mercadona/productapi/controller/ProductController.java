@@ -8,12 +8,14 @@ import com.mercadona.productapi.model.Product;
 import com.mercadona.productapi.services.ProductService;
 import com.mercadona.productapi.validator.EAN;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -31,10 +33,10 @@ public class ProductController {
      * Creates a new product.
      *
      * @param product the product to create
-     * @return the created product
+     * @return the JSON with the status
      */
     @PostMapping(path = UrlMvcConstants.CREATE)
-    public JSONResult<Boolean> createProduct(@RequestBody @Valid @EAN Product product) {
+    public JSONResult<Boolean> createProduct(@RequestBody @Valid Product product) {
         try {
             productService.create(product);
             return new JSONResult<>(true, "Product created successfully");
@@ -57,6 +59,24 @@ public class ProductController {
             return new JSONResult<>(productService.findByEan(ean));
         } catch (ResourceNotFoundException e) {
             return new JSONResult<>(false, e.getMessage());
+        }
+    }
+
+    /**
+     * Updates a product by its EAN code.
+     *
+     * @param product the updated product
+     * @return the JSON with the status of updateProduct
+     */
+    @PutMapping(path = UrlMvcConstants.UPDATE)
+    public JSONResult<Product> updateProduct(@RequestBody @Valid Product product) {
+        try {
+            productService.updateProduct(product);
+            return new JSONResult<>(true, "Product update successfully");
+        } catch (ResourceNotFoundException e) {
+            return new JSONResult<>(false, e.getMessage());
+        } catch (Exception e) {
+            return new JSONResult<>(false, "Error update product: " + e.getMessage());
         }
     }
 
@@ -84,5 +104,17 @@ public class ProductController {
         } catch (ResourceNotFoundException e) {
             return new JSONResult<>(false, e.getMessage());
         }
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public JSONResult<String> handleValidationExceptions(
+            MethodArgumentNotValidException ex) {
+        List<String> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(x -> x.getDefaultMessage())
+                .collect(Collectors.toList());
+        return new JSONResult<>(false, "Validation error: " + String.join(", ", errors));
     }
 }
